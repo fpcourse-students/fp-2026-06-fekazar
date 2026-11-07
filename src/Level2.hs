@@ -17,7 +17,21 @@ import Text.Read (readMaybe)
 -- пары, правое поддерево. Первая компонента пары по-прежнему игнорируется.
 -- Выберите минимально необходимый набор методов. Законы Ord — лекция 6.
 
-todoImpl ''Ord ''IntTree
+instance Ord IntTree where
+  compare IntLeaf IntLeaf = EQ 
+  compare IntLeaf (IntNode _ _ _) = LT
+  compare (IntNode _ _ _) IntLeaf = GT
+  compare (IntNode l (_, x) r) (IntNode l' (_, x') r') = case () of
+    _
+      | cl == LT -> LT
+      | cl == GT -> GT
+      | cx == LT -> LT
+      | cx == GT -> GT
+      | otherwise -> cr
+    where
+      cl = compare l l'
+      cx = compare x x'
+      cr = compare r r'
 
 
 -- 2.2. Циклический перебор.
@@ -31,8 +45,13 @@ class CycleEnum a where
   cycSucc :: a -> a
   cycPred :: a -> a
 
-todoImpl ''CycleEnum ''Bool
-todoImpl ''CycleEnum ''Int8
+instance CycleEnum Bool where
+  cycSucc x = not x
+  cycPred x = not x
+
+instance CycleEnum Int8 where
+  cycSucc x = x + 1
+  cycPred x = x - 1
 
 
 -- 2.3. Обёртка для циклического перебора.
@@ -42,7 +61,13 @@ todoImpl ''CycleEnum ''Int8
 newtype Cycling a = Cycling a
   deriving newtype (Eq, Show, Bounded, Enum)
 
-todoImpl ''CycleEnum ''Cycling
+instance (Eq a, Bounded a, Enum a) => CycleEnum (Cycling a) where
+  cycSucc x
+    | x == maxBound = minBound
+    | otherwise = succ x
+  cycPred x
+    | x == minBound = maxBound
+    | otherwise = pred x
 
 
 -- 2.4. Печать строк матрицы.
